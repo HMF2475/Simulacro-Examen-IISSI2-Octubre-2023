@@ -99,16 +99,14 @@ const destroy = async function (req, res) {
 const changeStatus = async function (req, res) {
   try {
     const restaurant = await Restaurant.findByPk(req.params.restaurantId)
-    if (restaurant.status !== 'closed' || restaurant.status !== 'temporarily closed') {
-      if (restaurant.status === 'online') {
-        restaurant.status = 'offline'
-      } else {
-        restaurant.status = 'online'
-      }
-      await restaurant.save()
-      res.json(restaurant)
+
+    if (restaurant.status === 'online') {
+      restaurant.status = 'offline'
+    } else {
+      restaurant.status = 'online'
     }
-    res.status(403).send('You can\' toggle status when the restaurant is closed or temporarily closed')
+    await restaurant.save()
+    res.json(restaurant)
   } catch (err) {
     res.status(500).send(err)
   }
