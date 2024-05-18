@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, FlatList, Pressable, View } from 'react-native'
 
-import { getAll, remove } from '../../api/RestaurantEndpoints'
+import { getAll, remove, changeStatus } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
@@ -75,8 +75,28 @@ export default function RestaurantsScreen ({ navigation, route }) {
             <TextRegular textStyle={styles.text}>
               Delete
             </TextRegular>
+
           </View>
         </Pressable>
+
+        {item.status !== 'closed' && item.status !== 'temporarily closed' && <Pressable
+            onPress={() => changeStatusRestaurant(item) }
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandGreenTap
+                  : GlobalStyles.brandGreen
+              },
+              styles.actionButton
+            ]}>
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name='check' color={'white'} size={20}/>
+            <TextRegular textStyle={styles.text}>
+              {item.status}
+            </TextRegular>
+
+          </View>
+        </Pressable>}
         </View>
       </ImageCard>
     )
@@ -152,6 +172,27 @@ export default function RestaurantsScreen ({ navigation, route }) {
       })
     }
   }
+  const changeStatusRestaurant = async (restaurant) => {
+    try {
+      await changeStatus(restaurant.id)
+      await fetchRestaurants()
+      showMessage({
+        message: `Restaurant ${restaurant.name} status succesfully changed`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setRestaurantToBeDeleted(null)
+      showMessage({
+        message: `Restaurant ${restaurant.name} status could not be changed.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
 
   return (
     <>
@@ -201,7 +242,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     bottom: 5,
     position: 'absolute',
-    width: '90%'
+    width: '30%'
   },
   text: {
     fontSize: 16,
